@@ -18,7 +18,7 @@ from pyrogram import Client, __version__
 from pyrogram.raw.all import layer
 from database.ia_filterdb import Media
 from database.users_chats_db import db
-from info import SESSION, API_ID, API_HASH, BOT_TOKEN, LOG_STR, LOG_CHANNEL, PORT
+from info import SESSION, API_ID, API_HASH, BOT_TOKEN, LOG_STR, LOG_CHANNEL, PORT, ADMINS
 from utils import temp
 from typing import Union, Optional, AsyncGenerator
 from pyrogram import types
@@ -59,13 +59,31 @@ class Bot(Client):
         await web.TCPSite(app, bind_address, PORT).start()
         logging.info(f"{me.first_name} with for Pyrogram v{__version__} (Layer {layer}) started on {me.username}.")
         logging.info(LOG_STR)
+        
         if LOG_CHANNEL:
             try:
                 await self.send_message(LOG_CHANNEL, text=f"<b>{me.mention} Rᴇsᴛᴀʀᴛᴇᴅ !!\n\n📅 Dᴀᴛᴇ : <code>{date}</code>\n⏰ Tɪᴍᴇ : <code>{time}</code>\n🌐 Tɪᴍᴇᴢᴏɴᴇ : <code>{TIMEZONE}</code>\n\n🉐 Vᴇʀsɪᴏɴ : <code>v{__version__}</code></b>")
             except Unauthorized:
-                LOGGER.warning("Bot isn't able to send message to LOG_CHANNEL")
+                LOGGER.warning("Bot isn't able to send message to LOG_CHANNEL. Trying Admins...")
+                await self.send_to_admins(me, date, time)
             except BadRequest as e:
-                LOGGER.error(e)
+                LOGGER.error(f"LOG_CHANNEL BadRequest: {e}. Trying Admins...")
+                await self.send_to_admins(me, date, time)
+            except Exception as e:
+                LOGGER.error(f"Unexpected error when sending to LOG_CHANNEL: {e}. Trying Admins...")
+                await self.send_to_admins(me, date, time)
+
+    async def send_to_admins(self, me, date, time):
+    
+        for admin_id in ADMINS:
+            try:
+                await self.send_message(
+                    chat_id=admin_id, 
+                    text=f"<b>⚠️ LOG_CHANNEL par message nahi gaya!\n\n{me.mention} Rᴇsᴛᴀʀᴛᴇᴅ !!\n\n📅 Dᴀᴛᴇ : <code>{date}</code>\n⏰ Tɪᴍᴇ : <code>{time}</code>\n🌐 Tɪᴍᴇᴢᴏɴᴇ : <code>{TIMEZONE}</code></b>"
+                )
+                logging.info(f"Notification successfully sent to Admin PM: {admin_id}")
+            except Exception as e:
+                LOGGER.error(f"Admin {admin_id} ke PM mein message nahi bheja ja saka: {e}")
 
     async def stop(self, *args):
         await super().stop()
@@ -77,29 +95,6 @@ class Bot(Client):
         limit: int,
         offset: int = 0,
     ) -> Optional[AsyncGenerator["types.Message", None]]:
-        """Iterate through a chat sequentially.
-        This convenience method does the same as repeatedly calling :meth:`~pyrogram.Client.get_messages` in a loop, thus saving
-        you from the hassle of setting up boilerplate code. It is useful for getting the whole chat messages with a
-        single call.
-        Parameters:
-            chat_id (``int`` | ``str``):
-                Unique identifier (int) or username (str) of the target chat.
-                For your personal cloud (Saved Messages) you can simply use "me" or "self".
-                For a contact that exists in your Telegram address book you can use his phone number (str).
-                
-            limit (``int``):
-                Identifier of the last message to be returned.
-                
-            offset (``int``, *optional*):
-                Identifier of the first message to be returned.
-                Defaults to 0.
-        Returns:
-            ``Generator``: A generator yielding :obj:`~pyrogram.types.Message` objects.
-        Example:
-            .. code-block:: python
-                for message in app.iter_messages("pyrogram", 1, 15000):
-                    print(message.text)
-        """
         current = offset
         while True:
             new_diff = min(200, limit - current)
