@@ -54,7 +54,7 @@ FILE_CHANNEL_LINK = environ.get('FILE_CHANNEL_LINK', 't.me/Imdb_updates')
 HOW_DWLD_LINK = environ.get('HOW_DWLD_LINK', 'https://t.me/how_to_download_channel/11')
 
 # Log Channels
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', -1003885008674))
+LOG_CHANNEL = int(environ.get('LOG_CHANNEL', -1003814751875))
 RQST_LOG_CHANNEL = int(environ.get('RQST_LOG_CHANNEL', -1003885008674))
 
 # Bot Options
