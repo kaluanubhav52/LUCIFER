@@ -1,4 +1,4 @@
-pyrofork 
+kurigram 
 tgcrypto
 pymongo[srv]
 motor
@@ -6,6 +6,7 @@ marshmallow
 umongo
 requests
 bs4
+git+https://github.com/cinemagoer/cinemagoer
 psutil
 aiohttp
 pytz
